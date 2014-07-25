@@ -32,7 +32,7 @@ class NFe200(FiscalDocument):
     def _serializer(self, cr, uid, ids, nfe_environment, context=None):
         """"""
         try:
-            from pysped.nfe.leiaute import NFe_200, Det_200, NFRef_200, Dup_200
+            from pysped.nfe.leiaute import NFe_200, Det_200, NFRef_200, Dup_200, Vol_200
         except ImportError:
             raise orm.except_orm(
                 _(u'Erro!'), _(u"Biblioteca PySPED não instalada!"))
@@ -338,7 +338,17 @@ class NFe200(FiscalDocument):
 
             except AttributeError:
                 pass
-
+            
+            if inv.number_of_packages or inv.weight > 0.0 or inv.weight_net > 0:
+                vol = Vol_200()
+                vol.qVol.valor = inv.number_of_packages if inv.number_of_packages > 0 else 1
+                vol.nVol.valor = '1'
+                vol.esp.valor = 'Volume'
+                vol.pesoB.valor = str("%.3f" % inv.weight)
+                vol.pesoL.valor = str("%.3f" % inv.weight_net)
+                
+                nfe.infNFe.transp.vol.append(vol)
+        
             #
             # Informações adicionais
             #
